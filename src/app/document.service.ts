@@ -1,12 +1,11 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Subject, Observable } from "rxjs/Rx";
+import { Subject, Observable, BehaviorSubject } from "rxjs/Rx";
 
 @Injectable()
 export class DocumentService {
   private scrollSpy$: Subject<any> = new Subject<any>();
-  verticalScrollBarWidth: number;
-  verticalScrollBarWidth$ : Subject<number> = new Subject<number>();
-
+  private verticalScrollBarWidth: number;
+  verticalScrollBarWidth$ : BehaviorSubject<number>;
 
   constructor(private zone: NgZone) {
     this.zone.runOutsideAngular(() =>{
@@ -14,8 +13,9 @@ export class DocumentService {
       this.spyOnWindow();
     });
 
+    this.verticalScrollBarWidth$ = new BehaviorSubject<number>(this.hasVerticalScrollbar() ? this.verticalScrollBarWidth : 0);
     this.scrollSpy$
-      .map(() => {return document.body.scrollHeight > window.innerHeight})
+      .map(() => {return this.hasVerticalScrollbar()})
       .distinctUntilChanged()
       .subscribe((hasVerticalScrollBar: boolean) => {
       this.verticalScrollBarWidth$.next(hasVerticalScrollBar ? this.verticalScrollBarWidth : 0);
@@ -52,5 +52,9 @@ export class DocumentService {
         this.scrollSpy$.next(e);
       });
     })
+  }
+
+  private hasVerticalScrollbar(): boolean {
+    return document.body.scrollHeight > window.innerHeight;
   }
 }

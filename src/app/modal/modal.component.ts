@@ -9,15 +9,13 @@ import { Subscription } from "rxjs/Subscription";
 })
 export class ModalComponent implements OnInit, OnDestroy {
   @HostBinding('class.isShown') isShown: boolean;
-  private scrollBarWidth: number;
+  private scrollBarWidth = this.documentService.verticalScrollBarWidth$.getValue();
   private subscription: Subscription;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
 
   ngOnInit(): void {
-    this.scrollBarWidth = document.body.scrollHeight > window.innerHeight ?
-      this.documentService.verticalScrollBarWidth : 0;
     this.subscription = this.documentService.verticalScrollBarWidth$
       .subscribe((scrollBarWidth)=> {
         this.scrollBarWidth = scrollBarWidth;
