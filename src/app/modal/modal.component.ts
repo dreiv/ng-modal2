@@ -8,18 +8,20 @@ import { Subscription } from "rxjs/Subscription";
   styleUrls: ['./modal.component.css']
 })
 export class ModalComponent implements OnInit, OnDestroy {
-  @HostBinding('class.visible') visible: boolean;
-  private scrollBarWidth = this.documentService.verticalScrollBarWidth;
+  @HostBinding('class.isShown') isShown: boolean;
+  private scrollBarWidth: number;
   private subscription: Subscription;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
 
   ngOnInit(): void {
+    this.scrollBarWidth = document.body.scrollHeight > window.innerHeight ?
+      this.documentService.verticalScrollBarWidth : 0;
     this.subscription = this.documentService.verticalScrollBarWidth$
       .subscribe((scrollBarWidth)=> {
         this.scrollBarWidth = scrollBarWidth;
-        if(this.visible) {
+        if(this.isShown) {
           this.padVerticalScrollbar();
         }
       });
@@ -30,30 +32,29 @@ export class ModalComponent implements OnInit, OnDestroy {
   }
 
   show() {
-    if(this.visible) {
-      return;
+    if(!this.isShown) {
+      this.padVerticalScrollbar();
+      this.isShown = true;
     }
-    this.padVerticalScrollbar();
-    this.renderer.setStyle(document.body, 'overflow', 'hidden');
-    this.visible = true;
   }
 
   hide() {
-    if(!this.visible) {
-      return;
+    if(this.isShown) {
+      if(this.scrollBarWidth > 0){
+        this.renderer.removeStyle(document.body, 'overflow');
+        this.renderer.removeStyle(document.body, 'padding-right');
+      }
+      this.isShown = false;
     }
-    this.renderer.removeStyle(document.body, 'overflow');
-    if(this.scrollBarWidth > 0){
-      this.renderer.removeStyle(document.body, 'padding-right');
-    }
-    this.visible = false;
   }
 
   private padVerticalScrollbar() {
     if(this.scrollBarWidth > 0) {
       this.renderer.setStyle(document.body, 'padding-right', `${this.scrollBarWidth}px`);
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
     } else {
       this.renderer.removeStyle(document.body, 'padding-right');
+      this.renderer.removeStyle(document.body, 'overflow');
     }
   }
 }
