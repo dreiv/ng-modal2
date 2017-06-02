@@ -1,4 +1,5 @@
-import {Component, ElementRef, HostBinding, Renderer2} from '@angular/core';
+import {Component, HostBinding, Renderer2} from '@angular/core';
+import { DocumentService } from "../document.service";
 
 @Component({
   selector: 'app-modal',
@@ -10,15 +11,21 @@ export class ModalComponent {
   private scrollBarWidth = 0;
 
   constructor(private renderer: Renderer2,
-              private modalElement: ElementRef) { }
+              private documentService: DocumentService) { }
 
   show() {
-    this.visible = true;
-    this.renderer.setStyle(document.body, 'padding-right', `${this.getScrollBarWidth()}px`);
+    if(this.visible) {
+      return;
+    }
+    this.renderer.setStyle(document.body, 'padding-right', `${this.documentService.scrollBarWidth}px`);
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
+    this.visible = true;
   }
 
   hide() {
+    if(!this.visible) {
+      return;
+    }
     this.renderer.removeStyle(document.body, 'overflow');
     this.renderer.removeStyle(document.body, 'padding-right');
     this.visible = false;
