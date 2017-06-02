@@ -8,7 +8,6 @@ import { Subscription } from "rxjs/Subscription";
   styleUrls: ['./modal.component.css']
 })
 export class ModalComponent implements OnInit, OnDestroy {
-  private scrollBarWidth = this.documentService.verticalScrollBarWidth$.getValue();
   private subscription: Subscription;
 
   @HostBinding('class.isShown')
@@ -20,9 +19,8 @@ export class ModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscription = this.documentService.verticalScrollBarWidth$
       .subscribe((scrollBarWidth)=> {
-        this.scrollBarWidth = scrollBarWidth;
         if(this.isShown) {
-          this.handleScrollbar();
+          this.handleScrollbar(scrollBarWidth);
         }
       });
   }
@@ -33,7 +31,7 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   show() {
     if(!this.isShown) {
-      this.handleScrollbar();
+      this.handleScrollbar(this.documentService.verticalScrollBarWidth$.getValue());
       this.renderer.setStyle(document.body, 'overflow', 'hidden');
       this.isShown = true;
     }
@@ -41,17 +39,15 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   hide() {
     if(this.isShown) {
-      if(this.scrollBarWidth > 0){
-        this.renderer.removeStyle(document.body, 'padding-right');
-      }
+      this.renderer.removeStyle(document.body, 'padding-right');
       this.renderer.removeStyle(document.body, 'overflow');
       this.isShown = false;
     }
   }
 
-  private handleScrollbar() {
-    if(this.scrollBarWidth > 0) {
-      this.renderer.setStyle(document.body, 'padding-right', `${this.scrollBarWidth}px`);
+  private handleScrollbar(scrollBarWidth: number) {
+    if(scrollBarWidth > 0) {
+      this.renderer.setStyle(document.body, 'padding-right', `${scrollBarWidth}px`);
     } else {
       this.renderer.removeStyle(document.body, 'padding-right');
     }
