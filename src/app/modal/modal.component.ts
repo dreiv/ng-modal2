@@ -8,9 +8,11 @@ import { Subscription } from "rxjs/Subscription";
   styleUrls: ['./modal.component.css']
 })
 export class ModalComponent implements OnInit, OnDestroy {
-  @HostBinding('class.isShown') isShown: boolean;
   private scrollBarWidth = this.documentService.verticalScrollBarWidth$.getValue();
   private subscription: Subscription;
+
+  @HostBinding('class.isShown')
+  isShown: boolean;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
@@ -20,7 +22,7 @@ export class ModalComponent implements OnInit, OnDestroy {
       .subscribe((scrollBarWidth)=> {
         this.scrollBarWidth = scrollBarWidth;
         if(this.isShown) {
-          this.padVerticalScrollbar();
+          this.handleScrollbar();
         }
       });
   }
@@ -31,7 +33,8 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   show() {
     if(!this.isShown) {
-      this.padVerticalScrollbar();
+      this.handleScrollbar();
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
       this.isShown = true;
     }
   }
@@ -39,20 +42,18 @@ export class ModalComponent implements OnInit, OnDestroy {
   hide() {
     if(this.isShown) {
       if(this.scrollBarWidth > 0){
-        this.renderer.removeStyle(document.body, 'overflow');
         this.renderer.removeStyle(document.body, 'padding-right');
       }
+      this.renderer.removeStyle(document.body, 'overflow');
       this.isShown = false;
     }
   }
 
-  private padVerticalScrollbar() {
+  private handleScrollbar() {
     if(this.scrollBarWidth > 0) {
       this.renderer.setStyle(document.body, 'padding-right', `${this.scrollBarWidth}px`);
-      this.renderer.setStyle(document.body, 'overflow', 'hidden');
     } else {
       this.renderer.removeStyle(document.body, 'padding-right');
-      this.renderer.removeStyle(document.body, 'overflow');
     }
   }
 }

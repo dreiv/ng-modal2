@@ -25,13 +25,9 @@ export class DocumentService {
   private computeScrollBarWidth() {
     const outer = document.createElement("div");
     outer.style.visibility = "hidden";
-    outer.style.width = "100px";
-    outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
-
-    document.body.appendChild(outer);
-
-    const widthNoScroll = outer.offsetWidth;
+    outer.style.width = "50px";
     outer.style.overflow = "scroll"; // force scrollbars
+    document.body.appendChild(outer);
 
     const inner = document.createElement("div");
     inner.style.width = "100%";
@@ -39,9 +35,8 @@ export class DocumentService {
 
     const widthWithScroll = inner.offsetWidth;
     outer.parentNode.removeChild(outer); // cleanup
-
     this.zone.run(() => {
-      this.verticalScrollBarWidth = widthNoScroll - widthWithScroll;
+      this.verticalScrollBarWidth = 50 - widthWithScroll;
     });
   }
 
