@@ -1,4 +1,4 @@
-import {Component, HostBinding, Renderer2} from '@angular/core';
+import { Component, HostBinding, OnInit, Renderer2 } from '@angular/core';
 import { DocumentService } from "../document.service";
 
 @Component({
@@ -6,18 +6,24 @@ import { DocumentService } from "../document.service";
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
-export class ModalComponent {
+export class ModalComponent implements OnInit {
   @HostBinding('class.visible') visible: boolean;
   private scrollBarWidth = 0;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
 
+  ngOnInit(): void {
+    this.documentService.verticalScrollBarWidth$.subscribe((data)=> {
+      console.log('data',data);
+    });
+  }
+
   show() {
     if(this.visible) {
       return;
     }
-    this.renderer.setStyle(document.body, 'padding-right', `${this.documentService.scrollBarWidth}px`);
+    this.renderer.setStyle(document.body, 'padding-right', `${this.documentService.verticalScrollBarWidth$}px`);
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
     this.visible = true;
   }

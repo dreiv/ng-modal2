@@ -3,14 +3,23 @@ import { Subject, Observable } from "rxjs/Rx";
 
 @Injectable()
 export class DocumentService {
-  scrollBarWidth : number;
-  scrollSpy$: Subject<any> = new Subject<any>();
+  private scrollSpy$: Subject<any> = new Subject<any>();
+  private verticalScrollBarWidth: number;
+  verticalScrollBarWidth$ : Subject<number> = new Subject<number>();
+
 
   constructor(private zone: NgZone) {
     this.zone.runOutsideAngular(() =>{
       this.computeScrollBarWidth();
       this.spyOnWindow();
     });
+
+    this.scrollSpy$
+      .map(() => {return document.body.scrollHeight > window.innerHeight})
+      .distinctUntilChanged()
+      .subscribe((hasVerticalScrollBar: boolean) => {
+      this.verticalScrollBarWidth$.next(hasVerticalScrollBar ? this.verticalScrollBarWidth : 0);
+      });
   }
 
   private computeScrollBarWidth() {
@@ -32,7 +41,7 @@ export class DocumentService {
     outer.parentNode.removeChild(outer); // cleanup
 
     this.zone.run(() => {
-      this.scrollBarWidth = widthNoScroll - widthWithScroll;
+      this.verticalScrollBarWidth = widthNoScroll - widthWithScroll;
     });
   }
 
