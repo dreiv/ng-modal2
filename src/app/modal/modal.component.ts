@@ -23,9 +23,13 @@ export class ModalComponent implements OnInit {
     this.renderer.removeStyle(document.body, 'padding-right');
   }
 
+  /**
+   * In order for this to work correctly the document body element must have no margins.
+   * @returns {number}
+   */
   private getScrollBarWidth(): number {
     if (this.scrollBarWidth === 0 && (document.body.scrollHeight > window.innerHeight)) {
-      this.scrollBarWidth  = window.innerWidth - document.body.clientWidth;
+      return this.scrollBarWidth  = window.innerWidth - document.body.clientWidth;
     }
     return this.scrollBarWidth;
   }
