@@ -4,7 +4,7 @@ import { Subject, Observable } from "rxjs/Rx";
 @Injectable()
 export class DocumentService {
   private scrollSpy$: Subject<any> = new Subject<any>();
-  private verticalScrollBarWidth: number;
+  verticalScrollBarWidth: number;
   verticalScrollBarWidth$ : Subject<number> = new Subject<number>();
 
 

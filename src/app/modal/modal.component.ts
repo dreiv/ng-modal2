@@ -1,29 +1,39 @@
-import { Component, HostBinding, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostBinding, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { DocumentService } from "../document.service";
+import { Subscription } from "rxjs/Subscription";
 
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
-export class ModalComponent implements OnInit {
+export class ModalComponent implements OnInit, OnDestroy {
   @HostBinding('class.visible') visible: boolean;
-  private scrollBarWidth = 0;
+  private scrollBarWidth = this.documentService.verticalScrollBarWidth;
+  private subscription: Subscription;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
 
   ngOnInit(): void {
-    this.documentService.verticalScrollBarWidth$.subscribe((data)=> {
-      console.log('data',data);
-    });
+    this.subscription = this.documentService.verticalScrollBarWidth$
+      .subscribe((scrollBarWidth)=> {
+        this.scrollBarWidth = scrollBarWidth;
+        if(this.visible) {
+          this.padVerticalScrollbar();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   show() {
     if(this.visible) {
       return;
     }
-    this.renderer.setStyle(document.body, 'padding-right', `${this.documentService.verticalScrollBarWidth$}px`);
+    this.padVerticalScrollbar();
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
     this.visible = true;
   }
@@ -33,18 +43,17 @@ export class ModalComponent implements OnInit {
       return;
     }
     this.renderer.removeStyle(document.body, 'overflow');
-    this.renderer.removeStyle(document.body, 'padding-right');
+    if(this.scrollBarWidth > 0){
+      this.renderer.removeStyle(document.body, 'padding-right');
+    }
     this.visible = false;
   }
 
-  /**
-   * In order for this to work correctly the document body element must have no margins.
-   * @returns {number}
-   */
-  private getScrollBarWidth(): number {
-    if (this.scrollBarWidth === 0 && (document.body.scrollHeight > window.innerHeight)) {
-      return this.scrollBarWidth  = window.innerWidth - document.body.clientWidth;
+  private padVerticalScrollbar() {
+    if(this.scrollBarWidth > 0) {
+      this.renderer.setStyle(document.body, 'padding-right', `${this.scrollBarWidth}px`);
+    } else {
+      this.renderer.removeStyle(document.body, 'padding-right');
     }
-    return this.scrollBarWidth;
   }
 }
