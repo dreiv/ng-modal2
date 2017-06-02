@@ -1,19 +1,19 @@
-import {Component, OnInit, Renderer2} from '@angular/core';
+import {Component, ElementRef, HostBinding, Renderer2} from '@angular/core';
 
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
-export class ModalComponent implements OnInit {
+export class ModalComponent {
+  @HostBinding('class.visible') visible: boolean;
   private scrollBarWidth = 0;
 
-  constructor(private renderer: Renderer2) { }
-
-  ngOnInit() {
-  }
+  constructor(private renderer: Renderer2,
+              private modalElement: ElementRef) { }
 
   show() {
+    this.visible = true;
     this.renderer.setStyle(document.body, 'padding-right', `${this.getScrollBarWidth()}px`);
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
   }
@@ -21,6 +21,7 @@ export class ModalComponent implements OnInit {
   hide() {
     this.renderer.removeStyle(document.body, 'overflow');
     this.renderer.removeStyle(document.body, 'padding-right');
+    this.visible = false;
   }
 
   /**
