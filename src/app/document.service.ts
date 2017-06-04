@@ -3,29 +3,29 @@ import { Subject, Observable, BehaviorSubject } from "rxjs/Rx";
 
 @Injectable()
 export class DocumentService {
-  private scrollSpy$: Subject<any> = new Subject<any>();
-  private verticalScrollBarWidth: number;
-  verticalScrollBarWidth$ : BehaviorSubject<number>;
+  private windowResizeSpy$: Subject<any> = new Subject<any>();
+  private scrollbarWidth: number;
+  verticalScrollbarWidth$ : BehaviorSubject<number>;
 
   constructor(private zone: NgZone) {
     this.zone.runOutsideAngular(() =>{
       this.computeScrollBarWidth();
-      this.spyOnWindow();
+      this.spyOnWindowResize();
     });
 
-    this.verticalScrollBarWidth$ = new BehaviorSubject<number>(this.hasVerticalScrollbar() ? this.verticalScrollBarWidth : 0);
-    this.scrollSpy$
-      .map(() => {return this.hasVerticalScrollbar()})
+    this.windowResizeSpy$
+      .map(() => { return this.getVerticalScrollbarWidth(); })
       .distinctUntilChanged()
-      .subscribe((hasVerticalScrollBar: boolean) => {
-      this.verticalScrollBarWidth$.next(hasVerticalScrollBar ? this.verticalScrollBarWidth : 0);
+      .subscribe((verticalScrollbarWidth: number) => {
+        this.verticalScrollbarWidth$.next(verticalScrollbarWidth);
       });
   }
 
   private computeScrollBarWidth() {
+    const widthNoScroll = 100;
     const outer = document.createElement("div");
     outer.style.visibility = "hidden";
-    outer.style.width = "50px";
+    outer.style.width = `${widthNoScroll}px`;
     outer.style.overflow = "scroll"; // force scrollbars
     document.body.appendChild(outer);
 
@@ -36,20 +36,23 @@ export class DocumentService {
     const widthWithScroll = inner.offsetWidth;
     outer.parentNode.removeChild(outer); // cleanup
     this.zone.run(() => {
-      this.verticalScrollBarWidth = 50 - widthWithScroll;
+      this.scrollbarWidth = widthNoScroll - widthWithScroll;
+      this.verticalScrollbarWidth$ = new BehaviorSubject<number>(this.getVerticalScrollbarWidth())
     });
   }
 
-  private spyOnWindow() {
+  private spyOnWindowResize() {
     Observable.fromEvent(window, 'resize')
-      .debounceTime(400).distinctUntilChanged().subscribe((e: Event) => {
-      this.zone.run(() => {
-        this.scrollSpy$.next(e);
-      });
-    })
+      .debounceTime(400)
+      .distinctUntilChanged()
+      .subscribe((e: Event) => {
+        this.zone.run(() => {
+          this.windowResizeSpy$.next(e);
+        });
+    });
   }
 
-  private hasVerticalScrollbar(): boolean {
-    return document.body.scrollHeight > window.innerHeight;
+  private getVerticalScrollbarWidth(): number {
+    return document.body.scrollHeight > window.innerHeight ?  this.scrollbarWidth : 0;
   }
 }

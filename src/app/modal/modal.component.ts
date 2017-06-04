@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component, HostBinding, OnDestroy, Renderer2 } from '@angular/core';
 import { DocumentService } from "../document.service";
 import { Subscription } from "rxjs/Subscription";
 
@@ -7,23 +7,14 @@ import { Subscription } from "rxjs/Subscription";
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
-export class ModalComponent implements OnInit, OnDestroy {
+export class ModalComponent implements  OnDestroy {
   private subscription: Subscription;
 
-  @HostBinding('class.isShown')
+  @HostBinding('class.show')
   isShown: boolean;
 
   constructor(private renderer: Renderer2,
               private documentService: DocumentService) { }
-
-  ngOnInit(): void {
-    this.subscription = this.documentService.verticalScrollBarWidth$
-      .subscribe((scrollBarWidth)=> {
-        if(this.isShown) {
-          this.handleScrollbar(scrollBarWidth);
-        }
-      });
-  }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
@@ -31,8 +22,15 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   show() {
     if(!this.isShown) {
-      this.handleScrollbar(this.documentService.verticalScrollBarWidth$.getValue());
+      this.handleScrollbar(this.documentService.verticalScrollbarWidth$.getValue());
       this.renderer.setStyle(document.body, 'overflow', 'hidden');
+
+      this.subscription = this.documentService.verticalScrollbarWidth$
+        .subscribe((scrollBarWidth)=> {
+          if(this.isShown) {
+            this.handleScrollbar(scrollBarWidth);
+          }
+        });
       this.isShown = true;
     }
   }
@@ -41,6 +39,8 @@ export class ModalComponent implements OnInit, OnDestroy {
     if(this.isShown) {
       this.renderer.removeStyle(document.body, 'padding-right');
       this.renderer.removeStyle(document.body, 'overflow');
+
+      this.subscription.unsubscribe();
       this.isShown = false;
     }
   }
