@@ -1,8 +1,7 @@
-import {Component, ElementRef, HostBinding, OnDestroy, OnInit, Renderer2} from '@angular/core';
+import {Component, ElementRef, HostBinding, OnDestroy, Renderer2} from '@angular/core';
 import { DocumentService } from "../document.service";
 import { Subscription } from "rxjs/Subscription";
 import {Observable} from "rxjs/Observable";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 
 @Component({
   selector: 'app-modal',
