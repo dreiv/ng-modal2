@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnDestroy, Renderer2 } from '@angular/core';
+import {Component, ElementRef, HostBinding, OnDestroy, Renderer2} from '@angular/core';
 import { DocumentService } from "../document.service";
 import { Subscription } from "rxjs/Subscription";
 
@@ -14,7 +14,8 @@ export class ModalComponent implements  OnDestroy {
   isShown: boolean;
 
   constructor(private renderer: Renderer2,
-              private documentService: DocumentService) { }
+              private documentService: DocumentService,
+              private element: ElementRef) { }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
@@ -31,6 +32,8 @@ export class ModalComponent implements  OnDestroy {
             this.handleScrollbar(scrollBarWidth);
           }
         });
+
+      this.element.nativeElement.focus();
       this.isShown = true;
     }
   }
@@ -41,6 +44,8 @@ export class ModalComponent implements  OnDestroy {
       this.renderer.removeStyle(document.body, 'overflow');
 
       this.subscription.unsubscribe();
+
+      this.element.nativeElement.blur();
       this.isShown = false;
     }
   }
